@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, ComputedRef, ref } from 'vue'
+import { defineComponent, PropType, computed, ComputedRef, ref, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { AditorDocView,ANodeType,ExportNodeConfig,AditorNode } from 'vue-aditor'
 import { AIMsgs, DataText, DataImage, DataAudio, deleteMsg as _deleteMsg, isAsking, aiAsk } from './aditorAIChatUtils'
 import {
@@ -135,7 +135,7 @@ export default defineComponent({
             required: true,
         }
     },
-    setup(props) {
+    setup(props, context) {
         const isShow = ref<boolean>(true)
         const inputVal = ref<string>('')
         const selectedModel = ref<modelName>('gpt3.5')
@@ -236,6 +236,31 @@ export default defineComponent({
             }
         }
 
+        const getSelection = () => {
+          return {
+            name: 'aditorAIChat',
+            vid: props.aNode.virtualId,
+            single: true,
+            start:0,
+            end:0,
+            total:0,
+            data:{
+                selected:false
+            }
+          }
+        }
+        const getSelectionText = ()=>{
+          return {forwardText:"", selectedText:"", backwardText:""}
+        }
+        context.expose({ getSelection, getSelectionText})
+
+        onMounted(() => {
+          props.docView.setVueComponent(props.aNode.virtualId, getCurrentInstance())
+        })
+
+        onUnmounted(() => {
+          props.docView.deleteVueComponent(props.aNode.virtualId)
+        })
         return {
             inputVal,
             selectedModel,

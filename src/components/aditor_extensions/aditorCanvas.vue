@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, PropType, defineOptions,nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, PropType, defineOptions, nextTick, getCurrentInstance } from 'vue';
 import { AditorDocView, ANodeType, AditorNode, dispatchUpdateData} from 'vue-aditor'
 import {
     PlayCircle24Filled as RunIcon,
@@ -39,6 +39,9 @@ defineOptions({
 const canvasContainerRef = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const canvasBodyRef = ref<HTMLDivElement | null>(null)
+const layerPromptRef = ref()
+const layerNegPromptRef = ref()
+
 
 const activeNames = ref(['1'])
 
@@ -303,6 +306,109 @@ const resizeCanvasOuter = ()=>{
     canvasBodyRef.value!.style.width = width+480 + 'px'
 }
 
+const getSelection = () => {
+    // 获取当前光标所在的DOM对象
+    const selection = window.getSelection()
+    let single = true
+    let start = 0
+    let end = 0
+    let total = 0
+    let selected = false
+    let selecteInputIndex = 0
+    if (selection && selection.anchorNode) {
+        const node = selection.anchorNode.nodeType === Node.TEXT_NODE
+        ? selection.anchorNode.parentNode
+        : selection.anchorNode;
+        let targetInput = null
+        if(layerPromptRef?.value?.$el?.contains && layerPromptRef?.value?.$el.contains(node)){
+            targetInput = layerPromptRef?.value?.$el.querySelector('input');
+            selecteInputIndex = 0
+        }else if(layerNegPromptRef?.value?.$el?.contains && layerNegPromptRef?.value?.$el.contains(node)){
+            targetInput = layerNegPromptRef?.value?.$el.querySelector('input');
+            selecteInputIndex = 1
+        }
+        if(targetInput){
+            selected = true
+            start = targetInput.selectionStart;
+            end = targetInput.selectionEnd;
+            total = targetInput.value.length;
+        }
+
+    }
+
+    return {
+        name: 'aditorCanvas',
+        vid: props.aNode.virtualId,
+        single: start === end,
+        start,
+        end,
+        total,
+        data:{
+            selected,
+            selecteInputIndex
+        }
+    }
+}
+
+const getSelectionText = ()=>{
+    // 获取当前光标所在的DOM对象
+    const selection = window.getSelection()
+    const result = {forwardText:'', selectedText:'', backwardText:''}
+    if (selection && selection.anchorNode) {
+        const node = selection.anchorNode.nodeType === Node.TEXT_NODE
+        ? selection.anchorNode.parentNode
+        : selection.anchorNode;
+        let targetInput = null
+        if(layerPromptRef?.value?.$el?.contains && layerPromptRef?.value?.$el.contains(node)){
+            targetInput = layerPromptRef?.value?.$el.querySelector('input');
+        }else if(layerNegPromptRef?.value?.$el?.contains && layerNegPromptRef?.value?.$el.contains(node)){
+            targetInput = layerNegPromptRef?.value?.$el.querySelector('input');
+        }
+        if(targetInput){
+            const start = targetInput.selectionStart;
+            const end = targetInput.selectionEnd;
+            const total = targetInput.value.length;
+            result.forwardText = targetInput.value.substring(0, start)
+            result.selectedText = targetInput.value.substring(start, end)
+            result.backwardText = targetInput.value.substring(end, total)
+        }
+
+    }
+
+    return result
+}
+
+const replaceMsg = (item:any, selection: any)=>{
+    const msg = item?.content || ''
+    const start = selection?.extend?.start
+    const end = selection?.extend?.end
+    if(start && end && start >= 0 && end >= 0){
+        const targetInput = selection?.extend?.data?.selecteInputIndex === 0 ? layerPromptRef?.value?.$el.querySelector('input') : layerNegPromptRef?.value?.$el.querySelector('input')
+        if(targetInput){
+            const value = targetInput.value
+            const newValue = value.substring(0, start) + msg + value.substring(end)
+            targetInput.value = newValue
+        }
+    }
+}
+
+const appendMsg = (item:any, selection: any)=>{
+    const msg = item?.content || ''
+    const targetInput = selection?.extend?.data?.selecteInputIndex === 0 ? layerPromptRef?.value?.$el.querySelector('input') : layerNegPromptRef?.value?.$el.querySelector('input')
+    if(targetInput){
+        const value = targetInput.value
+        const newValue = value + msg
+        targetInput.value = newValue
+    }
+}
+
+defineExpose({
+    getSelection,
+    getSelectionText,
+    replaceMsg,
+    appendMsg
+})
+
 onMounted(() => {
     const canvas = initCanvas(canvasRef.value as HTMLCanvasElement)
     canvasState.bindCanvas(canvas as fabric.Canvas)
@@ -310,11 +416,14 @@ onMounted(() => {
     canvasState.loadCanvasFromJSON(props.aNode.data)
     props.docView.bindViewEventHook('afterUpdateState', updateAfterUndoRedo)
     resizeCanvasOuter()
+    props.docView.setVueComponent(props.aNode.virtualId, getCurrentInstance())
+
 })
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', resizeCanvasOuter)
     props.docView.unbindViewEventHook('afterUpdateState', updateAfterUndoRedo)
+    props.docView.deleteVueComponent(props.aNode.virtualId)
 })
 
 </script>
@@ -345,7 +454,7 @@ onBeforeUnmount(() => {
                         </div>  
                         <div class="tool-box">
                             <div>负向提示</div>
-                            <el-input size="small" ref="layerPromptRef" v-model="canvasState.negativePromptComputed.value">
+                            <el-input size="small" ref="layerNegPromptRef" v-model="canvasState.negativePromptComputed.value">
                             </el-input>
                         </div>
                         <div class="tool-box">

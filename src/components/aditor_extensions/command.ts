@@ -34,7 +34,7 @@ const BACKGROUND_COLOR = {
     , '紫色': 'rgba(147, 90, 246, 0.55)'
 }
 
-type SelAttrs = {
+export type SelAttrs = {
     title: '正文' | '一级' | '二级' | '三级',
     alignment: '左对齐' | '居中对齐' | '右对齐' ,
     fontWeight: boolean,

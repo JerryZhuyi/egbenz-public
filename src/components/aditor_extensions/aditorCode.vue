@@ -3,12 +3,13 @@
     <codemirror
       v-model="code"
       :extensions="extensions"
+      @ready="handleReady"
     ></codemirror>
   </div>
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, onUnmounted, ref, reactive, getCurrentInstance, shallowRef } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { html } from '@codemirror/lang-html';
@@ -22,6 +23,10 @@ import { AditorDocView,ANodeType,ExportNodeConfig,AditorNode,dispatchUpdateData 
 const config:ExportNodeConfig = {
     secondaryType: ANodeType.BlockLeaf,
     dataKeyName: 'text',
+    defaultData:{
+      language:"python",
+      code:"",
+    },
     validStyleList: [
     ],
 }
@@ -41,7 +46,7 @@ export default defineComponent({
             required: true,
         }
     },
-    setup(props) {
+    setup(props, context) {
         // 设置定时器更新code和language
         let codeTimer: NodeJS.Timeout | null = null
         let languageTimer: NodeJS.Timeout | null = null
@@ -86,16 +91,83 @@ export default defineComponent({
           }
           return result
         })
+        const view = shallowRef()
+        const handleReady = (payload:any) => {
+          view.value = payload.view
+        }
+
+        const getSelection = () => {
+          const state = view.value.state
+          const ranges = state.selection.ranges
+          const startOffset = ranges.reduce((r:any, range:any) => r + range.to - range.from, 0)
+          const inverse = ranges[0].anchor > ranges[0].head
+          let start = 0
+          let end = 0
+          if(inverse){
+            start = ranges[0].anchor - startOffset
+            end = ranges[0].anchor
+          }else{
+            start = ranges[0].anchor
+            end = ranges[0].anchor + startOffset
+          }
+          const total = state.doc.length
+          return {
+            name: 'aditorCode',
+            vid: props.aNode.virtualId,
+            single: start === end,
+            start,
+            end,
+            total
+          }
+        }
+
+        const getSelectionText = ()=>{
+          const state = view.value.state
+          const ranges = state.selection.ranges
+          const selected_end = ranges.reduce((r:any, range:any) => r + range.to - range.from, 0)
+          const cursor = ranges[0].anchor
+          const length = state.doc.length
+          const lines = state.doc.lines
+          const forwardText = "```"+language.value+"\n"+state.doc.sliceString(0, cursor)
+          const selectedText = state.doc.sliceString(cursor, cursor + selected_end)
+          const backwardText = state.doc.sliceString(cursor + selected_end, length)+"\n```"
+          return {forwardText, selectedText, backwardText}
+        }
+
+        const replaceMsg = (item:any, selection: any)=>{
+            const replaceContent = item?.content || ''
+            const start = selection?.extend?.start
+            const end = selection?.extend?.end
+            const newCode = code.value.slice(0, start) + replaceContent + code.value.slice(end)
+            dispatchUpdateData(props.docView, props.aNode.start, Object.assign(props.aNode.data, {code: newCode}) )
+            
+        }
+
+        const appendMsg = (item:any, selection: any)=>{
+            const msg = item?.content || ''
+            const start = selection?.extend?.start
+            const newCode = code.value.slice(0, start) + msg + code.value.slice(start)
+            dispatchUpdateData(props.docView, props.aNode.start, Object.assign(props.aNode.data, {code: newCode}) )
+        }
+
+
+        context.expose({ getSelection, getSelectionText, replaceMsg, appendMsg})
 
         onMounted(() => {
+          props.docView.setVueComponent(props.aNode.virtualId, getCurrentInstance())
+        })
 
+        onUnmounted(() => {
+          props.docView.deleteVueComponent(props.aNode.virtualId)
         })
 
 
         return {
           editor,
           code,
-          extensions
+          extensions,
+          handleReady,
+
         }
     },
     config

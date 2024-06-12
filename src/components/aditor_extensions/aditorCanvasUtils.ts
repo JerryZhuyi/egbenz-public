@@ -945,7 +945,7 @@ export class CanvasState{
             this.canvas.renderAll()
 
         } else {
-            console.log("选中对象无法扩图")
+            // console.log("选中对象无法扩图")
         }
     }
 

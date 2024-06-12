@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+import { defineComponent, PropType, ref, onMounted, onUnmounted, getCurrentInstance} from 'vue'
 import { AditorDocView, ANodeType, ExportNodeConfig, AditorNode, createAditorNode, ViewEventEnum } from 'vue-aditor'
 import {
     DocumentPdf32Filled as PDFIcon,
@@ -62,7 +62,7 @@ export default defineComponent({
             required: true,
         }
     },
-    setup(props) {
+    setup(props, context) {
         const showButtons = ref(false)
         const pageStart = ref(1)
         const pageEnd = ref(1)
@@ -185,7 +185,32 @@ export default defineComponent({
                 return (size / 1024 / 1024 / 1024).toFixed(2) + 'GB';
             }
         }
-        
+
+        const getSelection = () => {
+          return {
+            name: 'aditorPDF',
+            vid: props.aNode.virtualId,
+            single: true,
+            start:0,
+            end:0,
+            total:0,
+            data:{
+                selected:false
+            }
+          }
+        }
+        const getSelectionText = ()=>{
+          return {forwardText:"", selectedText:"", backwardText:""}
+        }
+        context.expose({ getSelection, getSelectionText})
+        onMounted(() => {
+            props.docView.setVueComponent(props.aNode.virtualId, getCurrentInstance())
+        })
+
+        onUnmounted(() => {
+          props.docView.deleteVueComponent(props.aNode.virtualId)
+        })
+
         return {
             showButtons,
             openPDF,

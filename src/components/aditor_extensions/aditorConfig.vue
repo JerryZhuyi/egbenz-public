@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue'
+import { defineComponent, PropType, ref, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { AditorDocView, ANodeType, ExportNodeConfig, AditorNode, dispatchUpdateData } from 'vue-aditor'
 import configState from '../../config.ts'
 
@@ -46,7 +46,7 @@ export default defineComponent({
             required: true,
         }
     },
-    setup(props) {
+    setup(props, context) {
         const configs = configState.allConfig
         const input = ref('')
         const select = ref('')
@@ -75,6 +75,24 @@ export default defineComponent({
             }
         }
 
+        const getSelection = () => {
+          return {
+            name: 'aditorConfig',
+            vid: props.aNode.virtualId,
+            single: true,
+            start:0,
+            end:0,
+            total:0,
+            data:{
+                selected:false
+            }
+          }
+        }
+        const getSelectionText = ()=>{
+          return {forwardText:"", selectedText:"", backwardText:""}
+        }
+        context.expose({ getSelection, getSelectionText})
+
         onMounted(() => {
             if (props.aNode.data.config_key) {
                 select.value = props.aNode.data.config_key
@@ -82,7 +100,14 @@ export default defineComponent({
                     input.value = configs.value[select.value as any]
                 }
             }
+            props.docView.setVueComponent(props.aNode.virtualId, getCurrentInstance())
+
         })
+
+        onUnmounted(() => {
+          props.docView.deleteVueComponent(props.aNode.virtualId)
+        })
+
 
         return {
             input,

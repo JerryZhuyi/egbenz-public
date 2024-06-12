@@ -58,8 +58,8 @@ try{
 
 <style scoped>
 .editor-main {
-  min-width: 680px;
-  max-width: 1200px;
+  width: 880px;
+  /* max-width: 1200px; */
   background-color: #fff;
   padding: 0px 40px;
   position: absolute;

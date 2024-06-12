@@ -6,11 +6,12 @@ import Breadcrumb from './components/Breadcrumb.vue';
 import Editor from './components/Editor.vue';
 import EditorToolbar from './components/EditorToolbarUpgrade.vue';
 import Progress from './components/Progress.vue';
+import AIAssistant from './components/AIAssistant.vue';
 import { AditorDocView, aditorLogger } from 'vue-aditor'
 import { globalState } from './global-state.ts';
 
 // set logger ignore level, 0=all, 1=ignore debug, 2=ignore debug and info
-aditorLogger.setLevel(0)
+aditorLogger.setLevel(2)
 
 const contentRef = ref<HTMLElement | null>()
 const contentEditRefList = ref<HTMLElement[]>([])
@@ -53,9 +54,9 @@ const scroll2Keydown = (i:number) => {
 }
 
 onMounted(() => {
-  if (contentRef.value) {
-    contentRef.value.style.width = `${globalState.canvasFitWidth}px`
-  }
+  // if (contentRef.value) {
+  //   contentRef.value.style.width = `${globalState.canvasFitWidth}px`
+  // }
 })
 
 </script>
@@ -70,32 +71,34 @@ onMounted(() => {
       </el-aside>
 
       <el-container style="width:100%">
-        <div v-show="explorerState.openedNodePath.value && explorerState.openedNodePath.value.length > 0" ref="contentRef" class="content">
-          <el-tabs v-model="explorerState.openedNodePath.value" type="card" closable
-            @tab-remove="explorerState.closeOpenedDoc">
-            <el-tab-pane v-for="(item, i) in explorerState.state.openedNodes" :key="item.data.path"
-              :label="(item.data.isChanged ? '*' : '') + item.data.label" :name="item.data.path">
-              <div class="content-main">
-                <div class="breadcrumb">
-                  <breadcrumb :openedNodePath="explorerState.openedNodePath.value"></breadcrumb>
+        <el-main>
+          <div v-show="explorerState.openedNodePath.value && explorerState.openedNodePath.value.length > 0" ref="contentRef" class="content">
+            <el-tabs v-model="explorerState.openedNodePath.value" type="card" closable
+              @tab-remove="explorerState.closeOpenedDoc">
+              <el-tab-pane v-for="(item, i) in explorerState.state.openedNodes" :key="item.data.path"
+                :label="(item.data.isChanged ? '*' : '') + item.data.label" :name="item.data.path">
+                <div class="content-main">
+                  <div class="breadcrumb">
+                    <breadcrumb :openedNodePath="explorerState.openedNodePath.value"></breadcrumb>
+                  </div>
+                  <div :ref="(el)=>setContentEditRefList(el as HTMLElement, i)" class="content-main-editor" @keydown="scroll2Keydown(i)">
+                    <editor v-if="item.data.docJson" :docJson="item.data.docJson" :path="item.data.path"
+                      :setAditorViews="setAditorViews" :updateFile="(view: AditorDocView) => explorerState.updateFile(item.data.path, view)">
+                    </editor>
+                  </div>
                 </div>
-                <div :ref="el=>setContentEditRefList(el as HTMLElement, i)" class="content-main-editor" @keydown="scroll2Keydown(i)">
-                  <editor v-if="item.data.docJson" :docJson="item.data.docJson" :path="item.data.path"
-                    :setAditorViews="setAditorViews" :updateFile="(view) => explorerState.updateFile(item.data.path, view)">
-                  </editor>
-                </div>
-              </div>
-            </el-tab-pane>
-          </el-tabs>
-          <editor-toolbar :getAditorView="getActiveItemView" ref="toolBarRef"></editor-toolbar>
-        </div>
-        <div v-show="explorerState.openedNodePath.value == null || explorerState.openedNodePath.value.length == 0" class="content-empty">
-          Welcome
-        </div>
+              </el-tab-pane>
+            </el-tabs>
+            <!-- <editor-toolbar :getAditorView="getActiveItemView" ref="toolBarRef"></editor-toolbar> -->
+          </div>
+          <div v-show="explorerState.openedNodePath.value == null || explorerState.openedNodePath.value.length == 0" class="content-empty">
+            Welcome
+          </div>
+        </el-main>
       </el-container>
     </el-container>
     <Progress></Progress>
-    
+    <AIAssistant :getAditorView="getActiveItemView"></AIAssistant>
   </div>
 </template>
 
@@ -107,6 +110,11 @@ onMounted(() => {
 .content {
   flex: 4;
 }
+
+.layout-container-demo :deep(.el-main){
+  padding: 0px;
+}
+
 .content :deep(.el-tabs) {
   --el-tabs-header-height: 30px;
 }

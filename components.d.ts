@@ -15,6 +15,7 @@ declare module 'vue' {
     AditorPDF: typeof import('./src/components/aditor_extensions/aditorPDF.vue')['default']
     AditorQuote: typeof import('./src/components/aditor_extensions/aditorQuote.vue')['default']
     AditorTitleParagraph: typeof import('./src/components/aditor_extensions/aditorTitleParagraph.vue')['default']
+    AIAssistant: typeof import('./src/components/AIAssistant.vue')['default']
     Breadcrumb: typeof import('./src/components/Breadcrumb.vue')['default']
     Contextmenu: typeof import('./src/components/Contextmenu.vue')['default']
     Editor: typeof import('./src/components/Editor.vue')['default']
@@ -25,7 +26,6 @@ declare module 'vue' {
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCard: typeof import('element-plus/es')['ElCard']
-    ElCol: typeof import('element-plus/es')['ElCol']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
     ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
@@ -38,12 +38,12 @@ declare module 'vue' {
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
+    ElMain: typeof import('element-plus/es')['ElMain']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPopover: typeof import('element-plus/es')['ElPopover']
     ElProgress: typeof import('element-plus/es')['ElProgress']
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
-    ElRow: typeof import('element-plus/es')['ElRow']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSlider: typeof import('element-plus/es')['ElSlider']
@@ -58,6 +58,6 @@ declare module 'vue' {
     Progress: typeof import('./src/components/Progress.vue')['default']
   }
   export interface ComponentCustomProperties {
-    vPopover: typeof import('element-plus/es')['ElPopoverDirective']
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
