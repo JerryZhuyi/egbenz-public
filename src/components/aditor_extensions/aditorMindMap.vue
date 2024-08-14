@@ -9,7 +9,7 @@ import { defineComponent, onMounted, PropType, ref, toRaw, watch } from 'vue'
 import { AditorDocView, ANodeType, ExportNodeConfig, AditorNode, dispatchUpdateData } from 'vue-aditor'
 import 'jsmind/style/jsmind.css'
 import 'jsmind/draggable-node';
-import * as jsMind from 'jsmind'
+import jsMind from 'jsmind'
 
 const config: ExportNodeConfig = {
   secondaryType: ANodeType.BlockLeaf,
