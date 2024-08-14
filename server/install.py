@@ -1,7 +1,7 @@
 import os
 
 # 这个函数用于检查基础的环境安装
-def check_and_install_requirements():
+def check_and_install_requirements(uss_mirror=False):
     
     import pkg_resources
     import subprocess
@@ -28,4 +28,7 @@ def check_and_install_requirements():
             print(f'{requirement} NOT installed')
 
     # 安装requirements.txt中的所有包
-    subprocess.check_call(["python", '-m', 'pip', 'install', '-r', 'requirements.txt'])
+    if uss_mirror:
+        subprocess.check_call(["python", '-m', 'pip', 'install', '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple/', '-r', 'requirements.txt'])
+    else:
+        subprocess.check_call(["python", '-m', 'pip', 'install', '-r', 'requirements.txt'])

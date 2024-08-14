@@ -124,11 +124,14 @@ if __name__ == "__main__":
     parser.add_argument('-gitee', '--use_gitee', help='Whether to use gitee instead of github', action='store_true')
     # 是否前后端联调模式
     parser.add_argument('-dev', '--dev', help='Whether to use dev mode', action='store_true')
+    # 是否使用镜像
+    parser.add_argument('-mi', '--mirror', help='Whether to use mirror', action='store_true')
+
 
     args = parser.parse_args()
 
     if args.enable_install:
-        check_and_install_requirements()
+        check_and_install_requirements(args.mirror)
 
     if args.install_extension:
         init_repo(args.use_gitee)

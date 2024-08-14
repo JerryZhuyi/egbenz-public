@@ -117,6 +117,19 @@ function importMock() {
                         "text": "hello world",
                         "children": []
                     }]
+                },{
+                    "name": "aditorParagraph",
+                    "type": "child",
+                    "style": {},
+                    "data": {
+                    },
+                    "children": [{
+                        "name": "aditorMindMap",
+                        "type": "leaf",
+                        "style": {},
+                        "data": {
+                        },
+                    }]
                 }
             ]
         }

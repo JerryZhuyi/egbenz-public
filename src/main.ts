@@ -14,6 +14,7 @@ import AditorAIChat from './components/aditor_extensions/aditorAIChat.vue'
 import AditorPDF from './components/aditor_extensions/aditorPDF.vue'
 import AditorCode from './components/aditor_extensions/aditorCode.vue'
 import aditorQuote from './components/aditor_extensions/aditorQuote.vue'
+import aditorMindMap from './components/aditor_extensions/aditorMindMap.vue'
 import configState from './config.ts'
 
 
@@ -25,6 +26,7 @@ registerComponent(AditorConfig.name, ANodeType.Leaf, AditorConfig)
 registerComponent(AditorAIChat.name, ANodeType.Leaf, AditorAIChat)
 registerComponent(AditorPDF.name, ANodeType.Leaf, AditorPDF)
 registerComponent(AditorCode.name, ANodeType.Leaf, AditorCode)
+registerComponent(aditorMindMap.name, ANodeType.Leaf, aditorMindMap)
 
 
 createApp(App).mount('#app')

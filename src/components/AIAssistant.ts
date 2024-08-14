@@ -206,15 +206,8 @@ const show = (e: Event, container:HTMLElement, view: AditorDocView):ActionParams
     }
     // 展示下，点击到编辑器上，获取到选区，选区为单选
     else if(!aiStates.value.isHide && etype === 'mouseup' && !onAIAssistant && onAditor && selected && selectSingle){
-        // 如果不是sameSelection，立即切换
-        if(!sameSelection){
-            returnParams.show = true
-            returnParams.refreshSelection = true
-            returnParams.timeout = 0
-        }else{
-            returnParams.show = false
-            returnParams.timeout = 0
-        }
+        returnParams.show = false
+        returnParams.timeout = 0
     }
     // 展示下，点击到编辑器上，获取到选区，跨选区，立即切换
     else if(!aiStates.value.isHide && etype === 'mouseup' && !onAIAssistant && onAditor && selected && !selectSingle){
@@ -428,12 +421,13 @@ const getSelectionPosition = (e: Event, targetElement: HTMLElement): { top: numb
     }else{
         filterClientRanges.push(...allClientRanges)
     }
-    const lastRect = isFrontToBack ? filterClientRanges[filterClientRanges.length - 1] : filterClientRanges[0]
+    let lastRect = isFrontToBack ? filterClientRanges[filterClientRanges.length - 1] : filterClientRanges[0]
     const offsetX = isFrontToBack ? lastRect?.width : 0
     const parentNodeOffset = _getClientOffset(targetElement)
 
     if (lastRect == null) {
-        console.warn("Can't get lastRect, not move toolBar")
+        // 使用startNode
+        console.warn("Can't get lastRect, use startNode instead")
         return null
     }
 
@@ -445,7 +439,6 @@ const getSelectionPosition = (e: Event, targetElement: HTMLElement): { top: numb
     // 最后计算各种偏移位置
     let toolbalTop = endNodeOffset.top + Math.abs(endNodeBrowserOffset.top - lastRect.top) - textOffsetTop
     let toolbalLeft = lastRect.left + offsetX - parentNodeOffset.left - aiAssistantWidth/2
-
 
     // 获取body的宽度
     const bodyWidth = globalState.screenWidth-globalState.asideWidth
@@ -460,7 +453,7 @@ const getSelectionPosition = (e: Event, targetElement: HTMLElement): { top: numb
     
 }
 
-const getFocusElementPosition = (e: Event, targetElement: HTMLElement, focusElement: HTMLElement): { top: number, left: number } | null => {
+const getFocusElementPosition = (e: Event, _targetElement: HTMLElement, _focusElement: HTMLElement): { top: number, left: number } | null => {
     const _getClientOffset = (element: HTMLElement) => {
         let top = 0, left = 0;
         while (element) {
@@ -470,6 +463,25 @@ const getFocusElementPosition = (e: Event, targetElement: HTMLElement, focusElem
         }
         return { top: top, left: left };
     }
+    // 获取e.target，是否是input或者textarea
+    const target = e.target as HTMLElement
+    let targetElement = _targetElement
+    let focusElement = _focusElement
+    let heightFix = 0
+    let widthFix = 0
+
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        focusElement = target
+        if (focusElement.tagName === 'INPUT' || focusElement.tagName === 'TEXTAREA') {
+            // 获取focusElement的高度
+            const focusElementHeight = focusElement.offsetHeight
+            if (focusElementHeight) {
+                heightFix = focusElementHeight
+            }
+        } 
+    }
+
+    
     const parentNodeOffset = _getClientOffset(targetElement)
     const focusElementOffset = _getClientOffset(focusElement)
     if (focusElement == null) return null
@@ -480,8 +492,8 @@ const getFocusElementPosition = (e: Event, targetElement: HTMLElement, focusElem
     // 获取focusElement的高度
     const focusElementHeight = focusElement.offsetHeight
     const focusElementWidth = focusElement.offsetWidth
-    let top = focusElementOffset.top - parentNodeOffset.top + focusElementHeight + 5
-    let left = focusElementOffset.left - parentNodeOffset.left + aiAssistantWidth/2
+    let top = focusElementOffset.top - parentNodeOffset.top + focusElementHeight + 10
+    let left = focusElementOffset.left - parentNodeOffset.left 
 
     // 获取body的宽度
     const bodyWidth = globalState.screenWidth-globalState.asideWidth
@@ -1166,6 +1178,7 @@ function makeInsertChildren(view: AditorDocView, actionParams: ActionParams):AIF
         makeAiFunction('insertTitle', '标题', 'tool', '', (e:Event, item:AIFunctionInterface)=>{insertBlock(e, view, actionParams, item)}, [], undefined, undefined, 'aditorTitleParagraph'),
         makeAiFunction('insertText', '文本', 'tool', '', (e:Event, item:AIFunctionInterface)=>{insertBlock(e, view, actionParams, item)}, [], undefined, undefined, 'aditorParagraph'),
         makeAiFunction('insertConfig', '配置', 'tool', '', (e:Event, item:AIFunctionInterface)=>{insertBlock(e, view, actionParams, item)}, [], undefined, undefined, 'aditorConfig'),
+        makeAiFunction('insertjsMind', '思维导图', 'tool', '', (e:Event, item:AIFunctionInterface)=>{insertBlock(e, view, actionParams, item)}, [], undefined, undefined, 'aditorMindMap'),
     ]
 
     return insertChildren

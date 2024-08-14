@@ -12,6 +12,8 @@ declare module 'vue' {
     AditorCanvas: typeof import('./src/components/aditor_extensions/aditorCanvas.vue')['default']
     AditorCode: typeof import('./src/components/aditor_extensions/aditorCode.vue')['default']
     AditorConfig: typeof import('./src/components/aditor_extensions/aditorConfig.vue')['default']
+    AditorJSMind: typeof import('./src/components/aditor_extensions/aditorMind.vue')['default']
+    AditorMindMap: typeof import('./src/components/aditor_extensions/aditorMindMap.vue')['default']
     AditorPDF: typeof import('./src/components/aditor_extensions/aditorPDF.vue')['default']
     AditorQuote: typeof import('./src/components/aditor_extensions/aditorQuote.vue')['default']
     AditorTitleParagraph: typeof import('./src/components/aditor_extensions/aditorTitleParagraph.vue')['default']

@@ -32,3 +32,4 @@ egbenz.config.cfg
 # ignore other git project
 /server/apis/stable-diffusion-webui/
 /server/apis/VITS-fast-fine-tuning/
+/db/
